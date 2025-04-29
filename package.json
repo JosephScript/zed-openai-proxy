@@ -1,19 +1,22 @@
 {
   "name": "zed-openai-proxy",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A simple proxy for Azure OpenAI integration with Zed",
+  "type": "module",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=22.0.0"
   },
   "bin": {
-    "azure-openai-zed-proxy": "./dist/proxy.js"
+    "zed-openai-proxy": "./dist/proxy.js"
   },
   "scripts": {
     "build": "node ./esbuild.js",
-    "start": "node ./dist/proxy.js"
+    "start": "node ./dist/proxy.js",
+    "prepare": "husky"
   },
   "devDependencies": {
-    "esbuild": "latest"
+    "esbuild": "latest",
+    "husky": "^9.1.7"
   },
   "main": "proxy.js",
   "repository": {
@@ -28,7 +31,7 @@
     "proxy",
     "node"
   ],
-  "author": "Joseph A. Szczesniak",
+  "author": "Joseph A. Szczesniak <hi@josephscript.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/JosephScript/zed-openai-proxy/issues"

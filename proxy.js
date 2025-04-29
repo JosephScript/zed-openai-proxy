@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 import { createServer } from "http";
 
 // Validate required environment variables
@@ -29,20 +28,14 @@ const server = createServer(async (req, res) => {
   if (req.method === "POST" && req.url === "/chat/completions") {
     let body = "";
 
-    // Collect incoming request data
     req.on("data", (chunk) => {
       body += chunk.toString();
     });
 
     req.on("end", async () => {
       try {
-        // Parse the incoming JSON payload
         const zedPayload = JSON.parse(body);
-
-        // Transform the request for Azure OpenAI
         const azurePayload = transformRequest(zedPayload);
-
-        // Forward the request to Azure OpenAI
         const azureUrl = `${AZURE_API_ENDPOINT}/chat/completions?api-version=${AZURE_API_VERSION}`;
 
         const azureResponse = await fetch(azureUrl, {
@@ -64,63 +57,46 @@ const server = createServer(async (req, res) => {
           return;
         }
 
-        // Stream the response back to Zed
         res.writeHead(200, {
           "Content-Type": "text/event-stream",
           "Cache-Control": "no-cache",
         });
+
         const reader = azureResponse.body.getReader();
+        let buffer = "";
 
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
 
           const chunk = new TextDecoder().decode(value).trim();
+          buffer += chunk; // Append chunk to buffer
 
-          const lines = chunk.split("\n"); // Split chunk into individual lines
+          const lines = buffer.split("\n"); // Split buffer into lines
+          buffer = ""; // Reset buffer for reassembly
+
           for (const line of lines) {
-            if (line.trim() === "") {
-              continue; // Skip empty lines
-            }
-
+            if (line.trim() === "") continue;
             if (line === "data: [DONE]") {
-              res.write("data: [DONE]\n"); // Forward the DONE signal
+              res.write("data: [DONE]\n");
+              continue;
+            }
+            if (!line.startsWith("data: ")) {
+              buffer += line + "\n"; // Reassemble incomplete lines
               continue;
             }
 
-            if (!line.startsWith("data: ")) {
-              continue; // Skip unexpected lines
-            }
-
-            const jsonStr = line.slice("data: ".length).trim();
-
-            // Sanitize the JSON string to remove trailing non-JSON characters
-            const sanitizedJsonStr = jsonStr.replace(/[^}\]]+$/, "");
-
+            const rawJson = line.slice("data: ".length).trim();
             try {
-              const dataPayload = JSON.parse(sanitizedJsonStr ?? "{}");
-
-              // Skip chunks with empty choices
-              if (dataPayload.choices && dataPayload.choices.length === 0)
-                continue;
-
-              // Forward valid JSON chunks
-              res.write(`data: ${JSON.stringify(dataPayload)}\n`);
+              const payload = JSON.parse(rawJson);
+              if (!payload.choices || !Array.isArray(payload.choices)) continue;
+              res.write(`data: ${JSON.stringify(payload)}\n`);
             } catch (err) {
-              console.error(
-                "Error parsing JSON line:",
-                err,
-                "chunk",
-                chunk,
-                "Sanitized Chunk:",
-                sanitizedJsonStr,
-              );
-              continue; // Skip malformed lines
+              buffer += line + "\n"; // Reassemble malformed JSON
             }
           }
         }
 
-        // Ensure EOF is properly handled
         res.write("data: [DONE]\n");
         res.end();
       } catch (err) {
