@@ -10,14 +10,6 @@ Streamline communication between Zed and Azure OpenAI with this lightweight prox
 - Streams events seamlessly for real-time interactions.
 - Easily configurable via CLI environment variables.
 
-## Usage
-
-You can use this proxy server directly with `npx`:
-
-```bash
-npx zed-openai-proxy
-```
-
 ### Environment Variables
 
 The script will automatically include the following keys:
@@ -31,6 +23,7 @@ export AZURE_API_ENDPOINT=https://<subdomain>.openai.azure.com/openai/deployment
 export AZURE_API_VERSION=2025-01-01-preview
 export AZURE_API_KEY=your-api-key
 export PROXY_PORT=8000
+node proxy.js
 ```
 
 Or instead you can also pass environment variables inline during execution:
@@ -39,7 +32,7 @@ Or instead you can also pass environment variables inline during execution:
 AZURE_API_ENDPOINT=https://<subdomain>.openai.azure.com/openai/deployments/<deployment> \
 AZURE_API_VERSION=2025-01-01-preview \
 AZURE_API_KEY=your-api-key \
-PROXY_PORT=8000 npx zed-openai-proxy
+PROXY_PORT=8000 node proxy.js
 ```
 
 ## Zed Settings
@@ -68,10 +61,7 @@ And, finally in the Assistant panel's configuration, add random text in the API 
 ```
 azure-openai-zed-proxy/
 ├── .husky/             # Commit hooks
-├── dist/
-│   └── proxy.js        # Bundled version created by `esbuild`
 ├── proxy.js             # Original source file
-├── esbuild.js           # Esbuild configuration
 ├── package.json         # NPM package configuration
 └── node_modules/
 ```
