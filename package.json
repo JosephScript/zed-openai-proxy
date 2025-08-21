@@ -7,30 +7,25 @@
     "node": ">=22.0.0"
   },
   "bin": {
-    "zed-openai-proxy": "./dist/proxy.js"
+    "zed-openai-proxy": "./proxy.js"
   },
   "scripts": {
-    "build": "node ./esbuild.js",
-    "start": "node ./dist/proxy.js",
+    "start": "node --env-file=.env proxy.js",
     "prepare": "husky"
   },
   "devDependencies": {
-    "esbuild": "latest",
+    "@biomejs/biome": "1.9.4",
     "husky": "^9.1.7"
+  },
+  "lint-staged": {
+    "*": "npx @biomejs/biome check --no-errors-on-unmatched --files-ignore-unknown=true --fix --diagnostic-level=error"
   },
   "main": "proxy.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/JosephScript/zed-openai-proxy.git"
   },
-  "keywords": [
-    "zed",
-    "zeditor",
-    "ai",
-    "nodejs",
-    "proxy",
-    "node"
-  ],
+  "keywords": ["zed", "zeditor", "ai", "nodejs", "proxy", "node"],
   "author": "Joseph A. Szczesniak <hi@josephscript.com>",
   "license": "MIT",
   "bugs": {
